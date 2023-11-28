@@ -41,12 +41,15 @@ Early in the next release cycle update the dependencies
 
   * Review any pinned packages in go.mod and remove if possible
   * make updatedirect
-  * make
+  * make GOTAGS=cmount
+  * make compiletest
   * git commit -a -v
   * make update
-  * make
+  * make GOTAGS=cmount
+  * make compiletest
   * roll back any updates which didn't compile
   * git commit -a -v --amend
+  * **NB** watch out for this changing the default go version in `go.mod`
 
 Note that `make update` updates all direct and indirect dependencies
 and there can occasionally be forwards compatibility problems with
@@ -89,6 +92,35 @@ Now
   * git checkout ${BASE_TAG}-stable docs/content/changelog.md
   * git commit -a -v -m "Changelog updates from Version ${NEW_TAG}"
   * git push
+
+## Sponsor logos
+
+If updating the website note that the sponsor logos have been moved out of the main repository.
+
+You will need to checkout `/docs/static/img/logos` from https://github.com/rclone/third-party-logos
+which is a private repo containing artwork from sponsors.
+
+## Update the website between releases
+
+Create an update website branch based off the last release
+
+    git co -b update-website
+
+If the branch already exists, double check there are no commits that need saving.
+
+Now reset the branch to the last release
+
+    git reset --hard v1.64.0
+
+Create the changes, check them in, test with `make serve` then
+
+    make upload_test_website
+
+Check out https://test.rclone.org and when happy
+
+    make upload_website
+
+Cherry pick any changes back to master and the stable branch if it is active.
 
 ## Making a manual build of docker
 

@@ -45,6 +45,14 @@ pointing to the fuse include directory within the WinFsp installation
 (typically `C:\Program Files (x86)\WinFsp\inc\fuse`). See also the
 [mount](/commands/rclone_mount/#installing-on-windows) documentation.
 
+On Windows, when you build a shared library, you can embed version information
+as binary resource. To do that you need to run the following command **before**
+the build command.
+
+```
+go run bin/resource_windows.go -binary librclone.dll -dir librclone
+```
+
 ### Documentation
 
 For documentation see the Go documentation for:
@@ -162,6 +170,29 @@ const char* input = "{"
 
 With C++11 you can use raw string literals to avoid the C++ escaping of string
 constants, leaving escaping only necessary for the contained JSON.
+
+## Example in golang
+
+Here is a go example to help you move files : 
+
+```go
+func main() {
+  librclone.Initialize()
+    syncRequest: = syncRequest {
+    SrcFs: "<absolute_path>",
+    DstFs: ":s3,env_auth=false,access_key_id=<access>,secret_access_key=<secret>,endpoint='<endpoint>':<bucket>",
+    }
+
+    syncRequestJSON, err: = json.Marshal(syncRequest)
+    if err != nil {
+    fmt.Println(err)
+    }
+		
+    out, status: = librclone.RPC("sync/copy", string(syncRequestJSON))
+    fmt.Println("Got status : %d and output %q", status, out)
+}
+
+```
 
 ## gomobile
 
