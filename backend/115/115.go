@@ -59,6 +59,10 @@ func init() {
 			Help:     "SEID from cookie",
 			Required: true,
 		}, {
+			Name:     "kid",
+			Help:     "KID from cookie",
+			Required: true,
+		}, {
 			Name:     config.ConfigEncoding,
 			Help:     config.ConfigEncodingHelp,
 			Advanced: true,
@@ -83,6 +87,7 @@ type Options struct {
 	UID  string               `config:"uid"`
 	CID  string               `config:"cid"`
 	SEID string               `config:"seid"`
+	KID  string               `config:"kid"`
 	Enc  encoder.MultiEncoder `config:"encoding"`
 }
 
@@ -170,6 +175,12 @@ func NewFs(ctx context.Context, name string, root string, m configmap.Mapper) (f
 	}, &http.Cookie{
 		Name:     "SEID",
 		Value:    opt.SEID,
+		Domain:   domain,
+		Path:     "/",
+		HttpOnly: true,
+	}, &http.Cookie{
+		Name:     "KID",
+		Value:    opt.KID,
 		Domain:   domain,
 		Path:     "/",
 		HttpOnly: true,
