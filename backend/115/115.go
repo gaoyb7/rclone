@@ -35,8 +35,8 @@ const (
 	ossEndpoint = "https://oss-cn-shenzhen.aliyuncs.com"
 
 	uploadSizeLimit = 5 * 1024 * 1024 * 1024
-	minSleep        = 150 * time.Millisecond
-	maxSleep        = 2 * time.Second
+	defaultMinSleep = 500 * time.Millisecond
+	maxSleep        = 4 * time.Second
 	decayConstant   = 2
 )
 
@@ -48,20 +48,25 @@ func init() {
 		NewFs:       NewFs,
 		Options: []fs.Option{{
 			Name:     "uid",
-			Help:     "UID from cookie",
+			Help:     "UID from cookie.",
 			Required: true,
 		}, {
 			Name:     "cid",
-			Help:     "CID from cookie",
+			Help:     "CID from cookie.",
 			Required: true,
 		}, {
 			Name:     "seid",
-			Help:     "SEID from cookie",
+			Help:     "SEID from cookie.",
 			Required: true,
 		}, {
 			Name:     "kid",
-			Help:     "KID from cookie",
+			Help:     "KID from cookie.",
 			Required: true,
+		}, {
+			Name:     "pacer_min_sleep",
+			Default:  defaultMinSleep,
+			Help:     "Minimum time to sleep between API calls.",
+			Advanced: true,
 		}, {
 			Name:     config.ConfigEncoding,
 			Help:     config.ConfigEncodingHelp,
@@ -84,11 +89,12 @@ func init() {
 
 // Options defines the configguration of this backend
 type Options struct {
-	UID  string               `config:"uid"`
-	CID  string               `config:"cid"`
-	SEID string               `config:"seid"`
-	KID  string               `config:"kid"`
-	Enc  encoder.MultiEncoder `config:"encoding"`
+	UID           string               `config:"uid"`
+	CID           string               `config:"cid"`
+	SEID          string               `config:"seid"`
+	KID           string               `config:"kid"`
+	PacerMinSleep fs.Duration          `config:"pacer_min_sleep"`
+	Enc           encoder.MultiEncoder `config:"encoding"`
 }
 
 // Fs represents a remote 115 drive
@@ -144,7 +150,7 @@ func NewFs(ctx context.Context, name string, root string, m configmap.Mapper) (f
 		opt:   *opt,
 		ci:    ci,
 		srv:   rest.NewClient(&http.Client{}),
-		pacer: fs.NewPacer(ctx, pacer.NewDefault(pacer.MinSleep(minSleep), pacer.MaxSleep(maxSleep), pacer.DecayConstant(decayConstant))),
+		pacer: fs.NewPacer(ctx, pacer.NewDefault(pacer.MinSleep(opt.PacerMinSleep), pacer.MaxSleep(maxSleep), pacer.DecayConstant(decayConstant))),
 		cache: cache.New(time.Minute, time.Minute*2),
 	}
 	f.srv.SetErrorHandler(func(resp *http.Response) error {
